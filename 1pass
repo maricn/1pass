@@ -139,6 +139,7 @@ OPTIND=1
 refresh=0
 verbose=0
 print_output=0
+print_output_pretty=0
 clip_time=30
 OP_SESSION_NAME=$(echo "$domain" | cut -f1 -d'.' | tr '-' '_')
 list_fields=0
@@ -360,6 +361,7 @@ get_001()
     fi
     ensure_item "$uuid"
     get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result_pretty=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -C -r ".overview" || echo -n "_fail_")
 }
 
 #
@@ -377,6 +379,7 @@ get_005()
     fi
     ensure_item "$uuid"
     get_result=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result_pretty=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -C -r ".overview" || echo -n "_fail_")
 }
 
 #
@@ -396,6 +399,7 @@ get_003()
     ensure_item "$uuid"
 
     get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result_pretty=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -C -r ".overview" || echo -n "_fail_")
 }
 
 #
@@ -410,6 +414,7 @@ get_110()
     ensure_item "$uuid"
 
     get_result=$(gpg -qd "${cache_dir}/${uuid}.gpg" | jq -r "${q}" || echo -n "_fail_")
+    get_result_pretty=$("$GPG" -qd "${cache_dir}/${uuid}.gpg" | jq -C -r ".overview" || echo -n "_fail_")
 }
 
 #
@@ -499,7 +504,11 @@ get_totp()
 output_result()
 {
     if [ $print_output -eq 1 ]; then
-        echo "${get_result}"
+        if [ $print_output_pretty -eq 1 ]; then
+            echo "${get_result_pretty}"
+        else
+            echo "${get_result}"
+        fi
     else
         local pbcopy
         pbcopy=pbcopy
@@ -569,6 +578,7 @@ while getopts "f?h?p?l?r?v?:" opt; do
             ;;
         p)
             print_output=1
+            print_output_pretty=1
             ;;
         l)
             print_output=1
